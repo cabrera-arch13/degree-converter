@@ -1,0 +1,22 @@
+DEGREE CONVERTER — versión inicial
+
+CONTENIDO
+- index.html: aplicación completa
+- manifest.webmanifest: configuración instalable
+- sw.js: caché para uso offline
+- icon-192.png e icon-512.png: iconos
+
+INSTALACIÓN EN IPHONE
+1. Publica el contenido de esta carpeta en un alojamiento HTTPS (por ejemplo, GitHub Pages, Netlify o tu propio hosting).
+2. Abre la URL publicada en Safari en el iPhone.
+3. Pulsa Compartir > Añadir a pantalla de inicio.
+4. Confirma con Añadir.
+
+Nota: iOS no instala una PWA directamente desde un archivo HTML local. Para que "Añadir a pantalla de inicio" funcione como aplicación, necesita servirse desde una dirección HTTPS.
+
+CONVENCIONES
+- Azimut: 0° Norte, 90° Este, 180° Sur, 270° Oeste, sentido horario.
+- Ángulo matemático: 0° Este, 90° Norte, 180° Oeste, 270° Sur, sentido antihorario.
+- Giro inverso: ángulo equivalente = (360° - ángulo) módulo 360°.
+
+Esta es una primera versión funcional; conviene validar las convenciones y el redondeo con tus casos de uso reales.

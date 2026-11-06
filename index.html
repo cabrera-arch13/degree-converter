@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#e9e8e3">
+<meta name="description" content="Conversor multilingüe de grados, DMS, decimales, azimut y orientación angular.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Degree Converter</title>
+<style>
+:root{--bg:#e9e8e3;--panel:#f7f6f2;--card:#fff;--ink:#242622;--muted:#777a73;--line:#deded7;--accent:#5d665d;--soft:#e8ebe5;--shadow:0 10px 30px #2426220c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+.app{max-width:520px;margin:auto;padding:24px 18px 38px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:11px}.mark{width:42px;height:42px;border-radius:14px;background:#333a34;color:#fff;display:grid;place-items:center;font-size:21px}
+h1{font-size:17px;letter-spacing:.08em;margin:0;font-weight:750}.subbrand{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:.04em}
+.pill{font-size:11px;color:var(--accent);background:#dfe3dc;padding:8px 11px;border-radius:20px;font-weight:650}
+h2{font-size:25px;line-height:1.15;margin:0 0 8px;letter-spacing:-.04em}.intro{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 20px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#ddded8;padding:5px;border-radius:15px;margin-bottom:17px}
+.tab{border:0;background:transparent;border-radius:11px;padding:11px 4px;font-size:12px;color:#676b64;font-weight:650}
+.tab.active{background:var(--panel);color:var(--ink);box-shadow:0 2px 8px #0000000b}
+.panel{background:var(--panel);border:1px solid #ffffffa6;border-radius:22px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+.panelhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}.eyebrow{font-size:10px;color:var(--muted);font-weight:750;letter-spacing:.12em;text-transform:uppercase}
+.fields{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.field label{display:block;font-size:11px;color:var(--muted);margin:0 0 7px}
+input,select{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px 10px;color:var(--ink);font-size:17px;outline:none;min-width:0}
+input:focus,select:focus{border-color:#8c968a;box-shadow:0 0 0 3px #8c968a20}
+.actions{display:flex;gap:9px;margin-top:14px}.btn{border:0;border-radius:12px;padding:13px 15px;font-size:13px;font-weight:700;cursor:pointer}
+.primary{background:#343b35;color:white;flex:1}.secondary{background:#e8e9e3;color:#454a43}
+.result{background:#e9ece6;border-radius:16px;padding:15px;margin-top:14px}.result .eyebrow{margin-bottom:8px}.value{font-size:25px;font-weight:750;letter-spacing:-.04em;overflow-wrap:anywhere}.hint{font-size:11px;color:var(--muted);margin-top:6px}
+.switchrow{display:flex;align-items:center;justify-content:center;gap:12px;margin:12px 0;color:var(--muted);font-size:12px}
+.switch{width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:#fff;font-size:18px;color:var(--accent)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fieldfull{margin-top:12px}
+.segment{display:grid;grid-template-columns:1fr 1fr;gap:7px;background:#e6e7e1;padding:5px;border-radius:13px;margin-bottom:14px}
+.segment button{border:0;background:transparent;padding:11px 7px;border-radius:9px;font-size:12px;color:var(--muted);font-weight:650}
+.segment button.active{background:#fff;color:var(--ink);box-shadow:0 2px 7px #0000000b}
+.compass{width:170px;height:170px;border:1px solid #cfd3ca;border-radius:50%;margin:14px auto 18px;position:relative;background:radial-gradient(circle,#fff 0 3px,transparent 4px),linear-gradient(transparent 49.6%,#d8dbd3 49.8% 50.2%,transparent 50.4%),linear-gradient(90deg,transparent 49.6%,#d8dbd3 49.8% 50.2%,transparent 50.4%),#f4f4ef}
+.compass:before{content:"N";position:absolute;top:9px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#4f5b50}
+.compass:after{content:"S";position:absolute;bottom:9px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#7d8179}
+.east,.west{position:absolute;top:50%;transform:translateY(-50%);font-size:11px;font-weight:800;color:#7d8179}.east{right:10px}.west{left:10px}
+.needle{position:absolute;left:50%;top:50%;width:3px;height:64px;background:#59675a;transform-origin:50% 100%;border-radius:3px;transform:translate(-50%,-100%) rotate(0deg)}
+.needle:after{content:"";position:absolute;top:-5px;left:-4px;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:11px solid #59675a}\n.sensorNeedle{position:absolute;left:50%;top:50%;width:2px;height:53px;background:#a17b4b;transform-origin:50% 100%;border-radius:3px;transform:translate(-50%,-100%) rotate(0deg);opacity:.95}.sensorNeedle:after{content:\"\";position:absolute;top:-4px;left:-3px;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:9px solid #a17b4b}
+.history{margin-top:18px}.historyhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.historylist{display:grid;gap:7px}.historyitem{display:flex;justify-content:space-between;gap:10px;background:#fff;border:1px solid var(--line);padding:11px 12px;border-radius:12px;font-size:12px}.historyitem span:last-child{font-weight:700;text-align:right}
+.foot{text-align:center;color:var(--muted);font-size:10px;margin-top:20px}
+.hidden{display:none!important}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#303831;color:white;padding:11px 16px;border-radius:20px;font-size:12px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1}
+@media(max-width:360px){.app{padding:18px 12px}.panel{padding:14px}.value{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand"><div class="mark">°</div><div><h1>DEGREE CONVERTER</h1><div class="subbrand">PRECISIÓN EN CADA ÁNGULO</div></div></div><div style="display:flex;align-items:center;gap:7px"><select id="language" aria-label="Language" style="width:auto;padding:8px 9px;border-radius:20px;font-size:12px;font-weight:700"><option value="es">ES</option><option value="it">IT</option><option value="de">DE</option><option value="en">EN</option><option value="fr">FR</option></select><span class="pill">PRO · TOOL</span></div></header>
+<h2>Tu centro de<br>conversión angular.</h2>
+<p class="intro">Convierte DMS, grados decimales, azimut y sentido de rotación desde un solo lugar.</p>
+<nav class="tabs">
+<button class="tab active" data-tab="dms">DMS ↔ DEC</button>
+<button class="tab" data-tab="azimuth">AZIMUT</button>
+<button class="tab" data-tab="rotation">ROTACIÓN</button>
+</nav>
+
+<section id="dms" class="view">
+<div class="panel">
+<div class="panelhead"><span class="eyebrow">Conversor de ángulos</span><span class="eyebrow">01 / 03</span></div>
+<div class="segment"><button class="active" id="toDecimal">DMS → Decimal</button><button id="toDms">Decimal → DMS</button></div>
+<div id="dmsInputs">
+<div class="fields">
+<div class="field"><label for="deg">Grados (°)</label><input id="deg" type="number" inputmode="decimal" value="40"></div>
+<div class="field"><label for="min">Minutos (')</label><input id="min" type="number" inputmode="decimal" value="26"></div>
+<div class="field"><label for="sec">Segundos (")</label><input id="sec" type="number" inputmode="decimal" value="46"></div>
+</div>
+</div>
+<div id="decimalInput" class="hidden"><div class="field"><label for="decimal">Grados decimales</label><input id="decimal" type="number" inputmode="decimal" step="any" value="40.446111"></div></div>
+<div class="actions"><button class="btn primary" id="convertDms">Convertir</button><button class="btn secondary" id="clearDms">Limpiar</button></div>
+<div class="result"><div class="eyebrow">Resultado</div><div class="value" id="dmsResult">40.446111°</div><div class="hint" id="dmsHint">Grados decimales · precisión de 6 decimales</div></div>
+</div>
+</section>
+
+<section id="azimuth" class="view hidden">
+<div class="panel">
+<div class="panelhead"><span class="eyebrow">Azimut ↔ ángulo matemático</span><span class="eyebrow">02 / 03</span></div>
+<div class="segment"><button class="active" id="azToMath">Azimut → Matemático</button><button id="mathToAz">Matemático → Azimut</button></div>
+<div class="field"><label id="azInputLabel" for="azValue">Azimut (0°–360° · desde el norte, horario)</label><input id="azValue" type="number" inputmode="decimal" step="any" value="90"></div>
+<div class="compass" aria-label="Live compass"><span class="east" id="eastLabel">E</span><span class="west" id="westLabel">W</span><div class="needle" id="needle"></div><div class="sensorNeedle" id="sensorNeedle" title="Brújula física del dispositivo"></div></div>
+<div style="text-align:center;margin:-5px 0 14px"><div class="eyebrow" id="compassCaption">DIRECCIÓN EN TIEMPO REAL</div><div id="compassLive" style="font-size:14px;font-weight:750;margin-top:5px">N · 0°</div><div id="sensorLive" class="hint">Sensor del iPhone: desactivado</div></div>
+<div class="actions"><button class="btn secondary" id="enableSensor" style="width:100%">Activar brújula del iPhone</button></div>
+<div class="actions"><button class="btn primary" id="convertAz">Convertir</button><button class="btn secondary" id="clearAz">Limpiar</button></div>
+<div class="result"><div class="eyebrow">Resultado</div><div class="value" id="azResult">0°</div><div class="hint" id="azHint">Este → 0° matemáticos</div></div>
+</div>
+<div class="panel"><div class="eyebrow">Referencia de azimut</div><div class="two" style="margin-top:12px"><div>0° · Norte</div><div>90° · Este</div><div>180° · Sur</div><div>270° · Oeste</div></div></div>
+</section>
+
+<section id="rotation" class="view hidden">
+<div class="panel">
+<div class="panelhead"><span class="eyebrow">Sentido de rotación</span><span class="eyebrow">03 / 03</span></div>
+<div class="segment"><button class="active" id="cwToCcw">Derecha → Izquierda</button><button id="ccwToCw">Izquierda → Derecha</button></div>
+<div class="field"><label for="rotValue">Ángulo de entrada (0°–360°)</label><input id="rotValue" type="number" inputmode="decimal" step="any" value="45"></div>
+<div class="actions"><button class="btn primary" id="convertRot">Convertir sentido</button><button class="btn secondary" id="clearRot">Limpiar</button></div>
+<div class="result"><div class="eyebrow">Ángulo equivalente</div><div class="value" id="rotResult">315°</div><div class="hint" id="rotHint">45° horario = 315° antihorario</div></div>
+</div>
+<div class="panel"><div class="eyebrow">Cómo se interpreta</div><p class="intro" style="margin:10px 0 0">La conversión conserva la misma dirección final, pero expresa el recorrido en el sentido contrario: (360° − ángulo) módulo 360°.</p></div>
+</section>
+
+<div class="panel history"><div class="historyhead"><span class="eyebrow">Historial reciente</span><button class="btn secondary" id="clearHistory" style="padding:7px 10px;font-size:11px">Borrar</button></div><div id="historyList" class="historylist"><div class="hint">Tus conversiones aparecerán aquí.</div></div></div>
+<div class="foot">DEGREE CONVERTER · HERRAMIENTA ANGULAR</div>
+</div>
+<div class="toast" id="toast">Copiado al portapapeles</div>
+<script>
+const $=id=>document.getElementById(id);let modeDms='dec',modeAz='math',modeRot='ccw';
+let historyItems=JSON.parse(localStorage.getItem('dcHistory')||'[]');
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1600)}
+function addHistory(label,value){historyItems.unshift({label,value});historyItems=historyItems.slice(0,8);localStorage.setItem('dcHistory',JSON.stringify(historyItems));renderHistory()}
+function renderHistory(){const el=$('historyList');el.innerHTML='';if(!historyItems.length){el.innerHTML='<div class="hint">Tus conversiones aparecerán aquí.</div>';return}historyItems.forEach(x=>{const d=document.createElement('div');d.className='historyitem';const a=document.createElement('span'),b=document.createElement('span');a.textContent=x.label;b.textContent=x.value;d.append(a,b);d.addEventListener('click',()=>copy(x.value));el.append(d)})}
+async function copy(v){try{await navigator.clipboard.writeText(v);toast('Resultado copiado')}catch(e){toast('Mantén pulsado el resultado para copiar')}}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('hidden',x.id!==b.dataset.tab))}));
+$('dmsResult').addEventListener('click',()=>copy($('dmsResult').textContent));
+$('azResult').addEventListener('click',()=>copy($('azResult').textContent));
+$('rotResult').addEventListener('click',()=>copy($('rotResult').textContent));
+function setDmsMode(m){modeDms=m;$('toDecimal').classList.toggle('active',m==='dec');$('toDms').classList.toggle('active',m==='dms');$('dmsInputs').classList.toggle('hidden',m!=='dec');$('decimalInput').classList.toggle('hidden',m!=='dms');$('dmsResult').textContent=m==='dec'?'40.446111°':'40° 26′ 46″';$('dmsHint').textContent=m==='dec'?'Grados decimales':'Grados · minutos · segundos'}
+$('toDecimal').onclick=()=>setDmsMode('dec');$('toDms').onclick=()=>setDmsMode('dms');
+function convertDms(){if(modeDms==='dec'){let d=Number($('deg').value),m=Number($('min').value),s=Number($('sec').value);if(![$('deg').value,$('min').value,$('sec').value].every(v=>v.trim()!== '')||m<0||m>=60||s<0||s>=60){toast('Revisa los valores: minutos y segundos deben ser 0–59');return}let sign=d<0?-1:1;let val=sign*(Math.abs(d)+m/60+s/3600);let out=val.toFixed(6)+'°';$('dmsResult').textContent=out;$('dmsHint').textContent='Grados decimales · precisión de 6 decimales';addHistory('DMS → Decimal',out)}else{let v=Number($('decimal').value);if($('decimal').value.trim()===''){toast('Introduce un ángulo decimal');return}let sign=v<0?'−':'',a=Math.abs(v),d=Math.floor(a),mf=(a-d)*60,m=Math.floor(mf),s=(mf-m)*60;let out=`${sign}${d}° ${m}′ ${s.toFixed(2)}″`;$('dmsResult').textContent=out;$('dmsHint').textContent='Grados · minutos · segundos';addHistory('Decimal → DMS',out)}}
+$('convertDms').onclick=convertDms;$('clearDms').onclick=()=>{['deg','min','sec','decimal'].forEach(x=>$(x).value='');$('dmsResult').textContent='—';$('dmsHint').textContent='Introduce los valores y convierte'};
+function norm(v){return ((v%360)+360)%360}
+function setAzMode(m){modeAz=m;$('azToMath').classList.toggle('active',m==='math');$('mathToAz').classList.toggle('active',m==='az');$('azInputLabel').textContent=m==='math'?'Azimut (0°–360° · desde el norte, horario)':'Ángulo matemático (0°–360° · desde el este, antihorario)';$('azHint').textContent=m==='math'?'Este → 0° matemáticos':'Norte → 0° azimut'}
+$('azToMath').onclick=()=>setAzMode('math');$('mathToAz').onclick=()=>setAzMode('az');
+function convertAz(){if($('azValue').value.trim()===''){toast('Introduce un ángulo');return}let v=Number($('azValue').value);if(!Number.isFinite(v)){toast('Valor no válido');return}let n=norm(v),r=modeAz==='math'?norm(90-n):norm(90-n);let out=r.toFixed(4).replace(/\.?0+$/,'')+'°';$('azResult').textContent=out;$('needle').style.transform=`translate(-50%,-100%) rotate(${modeAz==='math'?n:90-n}deg)`;let cardinal=modeAz==='math'?({0:'Este',90:'Norte',180:'Oeste',270:'Sur'}[n]||'Dirección convertida'):({0:'Norte',90:'Este',180:'Sur',270:'Oeste'}[n]||'Dirección convertida');$('azHint').textContent=cardinal+' · ángulo normalizado';addHistory(modeAz==='math'?'Azimut → Matemático':'Matemático → Azimut',out)}
+$('convertAz').onclick=convertAz;$('clearAz').onclick=()=>{$('azValue').value='';$('azResult').textContent='—';$('azHint').textContent='Introduce un ángulo y convierte';$('needle').style.transform='translate(-50%,-100%) rotate(0deg)'};
+function setRotMode(m){modeRot=m;$('cwToCcw').classList.toggle('active',m==='ccw');$('ccwToCw').classList.toggle('active',m==='cw')}
+$('cwToCcw').onclick=()=>setRotMode('ccw');$('ccwToCw').onclick=()=>setRotMode('cw');
+function convertRot(){if($('rotValue').value.trim()===''){toast('Introduce un ángulo');return}let v=norm(Number($('rotValue').value)),r=norm(360-v),out=r.toFixed(4).replace(/\.?0+$/,'')+'°';$('rotResult').textContent=out;$('rotHint').textContent=`${v}° ${modeRot==='ccw'?'horario':'antihorario'} = ${r}° ${modeRot==='ccw'?'antihorario':'horario'}`;addHistory(modeRot==='ccw'?'Derecha → Izquierda':'Izquierda → Derecha',out)}
+$('convertRot').onclick=convertRot;$('clearRot').onclick=()=>{$('rotValue').value='';$('rotResult').textContent='—';$('rotHint').textContent='Introduce un ángulo y convierte'};
+$('clearHistory').onclick=()=>{historyItems=[];localStorage.removeItem('dcHistory');renderHistory();toast('Historial borrado')};
+// Brújula interactiva: se actualiza mientras se escribe el ángulo.
+function compassBearing(){
+  const raw = $('azValue').value.trim();
+  if(raw===''){ $('compassLive').textContent='—'; return; }
+  const entered = norm(Number(raw));
+  const bearing = modeAz==='math' ? entered : norm(90-entered);
+  $('needle').style.transform=`translate(-50%,-100%) rotate(${bearing}deg)`;
+  const card = bearing===0?'N':bearing===90?'E':bearing===180?'S':bearing===270?'W':'';
+  $('compassLive').textContent=(card ? card+' · ' : '')+bearing.toFixed(2).replace(/\.?0+$/,'')+'°';
+}
+$('azValue').addEventListener('input',compassBearing);
+const oldConvertAz=convertAz;
+convertAz=function(){oldConvertAz();compassBearing()};
+
+
+// Brújula física mediante sensores de orientación del dispositivo.
+// En iOS, Safari solicita permiso explícito tras pulsar el botón y requiere HTTPS.
+let sensorActive=false;
+function setSensorStatus(message){$('sensorLive').textContent=message}
+function handleDeviceOrientation(event){
+  let heading=null;
+  if(typeof event.webkitCompassHeading==='number'){
+    // Safari en iOS: 0° norte, 90° este, sentido horario.
+    heading=event.webkitCompassHeading;
+  }else if(event.absolute===true && typeof event.alpha==='number'){
+    // Dispositivos compatibles con DeviceOrientationAbsolute: aproximación de rumbo.
+    heading=360-event.alpha;
+  }
+  if(heading===null || !Number.isFinite(heading)) return;
+  heading=norm(heading);
+  $('sensorNeedle').style.transform=`translate(-50%,-100%) rotate(${heading}deg)`;
+  const rounded=heading.toFixed(1).replace(/\.0$/,'');
+  setSensorStatus(`Sensor activo · ${rounded}° · ${cardinalName(heading)}`);
+}
+function cardinalName(deg){
+  const dirs=['N','NE','E','SE','S','SW','W','NW'];
+  return dirs[Math.round(norm(deg)/45)%8];
+}
+async function enablePhysicalCompass(){
+  if(!window.isSecureContext){
+    setSensorStatus('La brújula física necesita una página HTTPS segura.');
+    toast('Abre la aplicación desde una dirección HTTPS');
+    return;
+  }
+  try{
+    if(typeof DeviceOrientationEvent==='undefined'){
+      setSensorStatus('Este navegador no ofrece sensores de orientación.');
+      return;
+    }
+    if(typeof DeviceOrientationEvent.requestPermission==='function'){
+      const permission=await DeviceOrientationEvent.requestPermission();
+      if(permission!=='granted'){
+        setSensorStatus('Permiso de sensor denegado. Puedes activarlo en Ajustes.');
+        return;
+      }
+    }
+    window.addEventListener('deviceorientation',handleDeviceOrientation,true);
+    window.addEventListener('deviceorientationabsolute',handleDeviceOrientation,true);
+    sensorActive=true;
+    $('enableSensor').textContent='Brújula del iPhone activada';
+    setSensorStatus('Esperando datos del sensor… mueve el iPhone suavemente.');
+  }catch(err){
+    setSensorStatus('No se pudo activar el sensor. Comprueba los permisos del navegador.');
+  }
+}
+$('enableSensor').addEventListener('click',enablePhysicalCompass);
+
+// Traducciones de interfaz: español, italiano, alemán, inglés y francés.
+const translations={
+  es:{
+    "Tu centro de":"Tu centro de","conversión angular.":"conversión angular.","Convierte DMS, grados decimales, azimut y sentido de rotación desde un solo lugar.":"Convierte DMS, grados decimales, azimut y sentido de rotación desde un solo lugar.",
+    "Conversor de ángulos":"Conversor de ángulos","Grados (°)":"Grados (°)","Minutos (')":"Minutos (')","Segundos (\")":"Segundos (\")","Grados decimales":"Grados decimales","Convertir":"Convertir","Limpiar":"Limpiar","Resultado":"Resultado","Historial reciente":"Historial reciente","Borrar":"Borrar","Azimut ↔ ángulo matemático":"Azimut ↔ ángulo matemático","Azimut → Matemático":"Azimut → Matemático","Matemático → Azimut":"Matemático → Azimut","Sentido de rotación":"Sentido de rotación","Derecha → Izquierda":"Derecha → Izquierda","Izquierda → Derecha":"Izquierda → Derecha","Ángulo de entrada (0°–360°)":"Ángulo de entrada (0°–360°)","Convertir sentido":"Convertir sentido","Ángulo equivalente":"Ángulo equivalente","Referencia de azimut":"Referencia de azimut","DIRECCIÓN EN TIEMPO REAL":"DIRECCIÓN EN TIEMPO REAL","PRECISIÓN EN CADA ÁNGULO":"PRECISIÓN EN CADA ÁNGULO","Tu centro de conversión angular.":"Tu centro de conversión angular.","Tus conversiones aparecerán aquí.":"Tus conversiones aparecerán aquí.","Cómo se interpreta":"Cómo se interpreta","Sensor del iPhone: desactivado":"Sensor del iPhone: desactivado","Activar brújula del iPhone":"Activar brújula del iPhone"
+  },
+  it:{
+    "Tu centro de":"Il tuo centro di","conversión angular.":"conversione angolare.","Convierte DMS, grados decimales, azimut y sentido de rotación desde un solo lugar.":"Converti DMS, gradi decimali, azimut e senso di rotazione in un unico posto.",
+    "Conversor de ángulos":"Convertitore di angoli","Grados (°)":"Gradi (°)","Minutos (')":"Minuti (')","Segundos (\")":"Secondi (\")","Grados decimales":"Gradi decimali","Convertir":"Converti","Limpiar":"Cancella","Resultado":"Risultato","Historial reciente":"Cronologia recente","Borrar":"Elimina","Azimut ↔ ángulo matemático":"Azimut ↔ angolo matematico","Azimut → Matemático":"Azimut → Matematico","Matemático → Azimut":"Matematico → Azimut","Sentido de rotación":"Senso di rotazione","Derecha → Izquierda":"Orario → Antiorario","Izquierda → Derecha":"Antiorario → Orario","Ángulo de entrada (0°–360°)":"Angolo in ingresso (0°–360°)","Convertir sentido":"Converti direzione","Ángulo equivalente":"Angolo equivalente","Referencia de azimut":"Riferimenti azimutali","DIRECCIÓN EN TIEMPO REAL":"DIREZIONE IN TEMPO REALE","PRECISIÓN EN CADA ÁNGULO":"PRECISIONE IN OGNI ANGOLO","Cómo se interpreta":"Come si interpreta","Sensor del iPhone: desactivado":"Sensore iPhone: disattivato","Activar brújula del iPhone":"Attiva bussola iPhone","Tus conversiones aparecerán aquí.":"Le tue conversioni appariranno qui."
+  },
+  de:{
+    "Tu centro de":"Dein Zentrum für","conversión angular.":"Winkelumrechnung.","Convierte DMS, grados decimales, azimut y sentido de rotación desde un solo lugar.":"Wandle DMS, Dezimalgrade, Azimut und Drehrichtung an einem Ort um.",
+    "Conversor de ángulos":"Winkelkonverter","Grados (°)":"Grad (°)","Minutos (')":"Minuten (')","Segundos (\")":"Sekunden (\")","Grados decimales":"Dezimalgrad","Convertir":"Umrechnen","Limpiar":"Löschen","Resultado":"Ergebnis","Historial reciente":"Letzte Umrechnungen","Borrar":"Löschen","Azimut ↔ ángulo matemático":"Azimut ↔ mathematischer Winkel","Azimut → Matemático":"Azimut → mathematisch","Matemático → Azimut":"Mathematisch → Azimut","Sentido de rotación":"Drehrichtung","Derecha → Izquierda":"Im Uhrzeigersinn → gegen","Izquierda → Derecha":"Gegen den Uhrzeigersinn → im Uhrzeigersinn","Ángulo de entrada (0°–360°)":"Eingabewinkel (0°–360°)","Convertir sentido":"Richtung umrechnen","Ángulo equivalente":"Entsprechender Winkel","Referencia de azimut":"Azimut-Referenz","DIRECCIÓN EN TIEMPO REAL":"RICHTUNG IN ECHTZEIT","PRECISIÓN EN CADA ÁNGULO":"PRÄZISION BEI JEDEM WINKEL","Cómo se interpreta":"So wird es interpretiert","Sensor del iPhone: desactivado":"iPhone-Sensor: deaktiviert","Activar brújula del iPhone":"iPhone-Kompass aktivieren","Tus conversiones aparecerán aquí.":"Deine Umrechnungen erscheinen hier."
+  },
+  en:{
+    "Tu centro de":"Your angular","conversión angular.":"conversion hub.","Convierte DMS, grados decimales, azimut y sentido de rotación desde un solo lugar.":"Convert DMS, decimal degrees, azimuth and rotation direction in one place.",
+    "Conversor de ángulos":"Angle converter","Grados (°)":"Degrees (°)","Minutos (')":"Minutes (')","Segundos (\")":"Seconds (\")","Grados decimales":"Decimal degrees","Convertir":"Convert","Limpiar":"Clear","Resultado":"Result","Historial reciente":"Recent history","Borrar":"Clear","Azimut ↔ ángulo matemático":"Azimuth ↔ mathematical angle","Azimut → Matemático":"Azimuth → Math","Matemático → Azimut":"Math → Azimuth","Sentido de rotación":"Rotation direction","Derecha → Izquierda":"Clockwise → Counterclockwise","Izquierda → Derecha":"Counterclockwise → Clockwise","Ángulo de entrada (0°–360°)":"Input angle (0°–360°)","Convertir sentido":"Convert direction","Ángulo equivalente":"Equivalent angle","Referencia de azimut":"Azimuth reference","DIRECCIÓN EN TIEMPO REAL":"LIVE DIRECTION","PRECISIÓN EN CADA ÁNGULO":"PRECISION IN EVERY ANGLE","Cómo se interpreta":"How it works","Sensor del iPhone: desactivado":"iPhone sensor: off","Activar brújula del iPhone":"Enable iPhone compass","Tus conversiones aparecerán aquí.":"Your conversions will appear here."
+  },
+  fr:{
+    "Tu centro de":"Votre centre de","conversión angular.":"conversion angulaire.","Convierte DMS, grados decimales, azimut y sentido de rotación desde un solo lugar.":"Convertissez DMS, degrés décimaux, azimut et sens de rotation au même endroit.",
+    "Conversor de ángulos":"Convertisseur d’angles","Grados (°)":"Degrés (°)","Minutos (')":"Minutes (')","Segundos (\")":"Secondes (\")","Grados decimales":"Degrés décimaux","Convertir":"Convertir","Limpiar":"Effacer","Resultado":"Résultat","Historial reciente":"Historique récent","Borrar":"Effacer","Azimut ↔ ángulo matemático":"Azimut ↔ angle mathématique","Azimut → Matemático":"Azimut → mathématique","Matemático → Azimut":"Mathématique → azimut","Sentido de rotación":"Sens de rotation","Derecha → Izquierda":"Horaire → antihoraire","Izquierda → Derecha":"Antihoraire → horaire","Ángulo de entrada (0°–360°)":"Angle d’entrée (0°–360°)","Convertir sentido":"Convertir le sens","Ángulo equivalente":"Angle équivalent","Referencia de azimut":"Repère d’azimut","DIRECCIÓN EN TIEMPO REAL":"DIRECTION EN TEMPS RÉEL","PRECISIÓN EN CADA ÁNGULO":"PRÉCISION À CHAQUE ANGLE","Cómo se interpreta":"Comment ça marche","Sensor del iPhone: desactivado":"Capteur iPhone : désactivé","Activar brújula del iPhone":"Activer la boussole de l’iPhone","Tus conversiones aparecerán aquí.":"Vos conversions apparaîtront ici."
+  }
+};
+const originalTextNodes=[];
+{const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);while(w.nextNode())originalTextNodes.push({node:w.currentNode,text:w.currentNode.nodeValue});}
+function applyLanguage(lang){
+  const dict=translations[lang]||translations.es;
+  document.documentElement.lang=lang;
+  originalTextNodes.forEach(item=>{item.node.nodeValue=item.text;});
+  originalTextNodes.forEach(item=>{
+    const node=item.node;
+    const original=item.text.trim();
+    if(!original)return;
+    if(dict[original]){
+      const leading=node.nodeValue.match(/^\s*/)[0],trailing=node.nodeValue.match(/\s*$/)[0];
+      node.nodeValue=leading+dict[original]+trailing;
+    }
+  });
+  const labels={
+    es:{az:'Azimut (0°–360° · desde el norte, horario)',math:'Ángulo matemático (0°–360° · desde el este, antihorario)',north:'Norte',east:'Este',south:'Sur',west:'Oeste'},
+    it:{az:'Azimut (0°–360° · dal nord, senso orario)',math:'Angolo matematico (0°–360° · da est, antiorario)',north:'Nord',east:'Est',south:'Sud',west:'Ovest'},
+    de:{az:'Azimut (0°–360° · ab Norden, im Uhrzeigersinn)',math:'Mathematischer Winkel (0°–360° · ab Osten, gegen den Uhrzeigersinn)',north:'Norden',east:'Osten',south:'Süden',west:'Westen'},
+    en:{az:'Azimuth (0°–360° · from north, clockwise)',math:'Math angle (0°–360° · from east, counterclockwise)',north:'North',east:'East',south:'South',west:'West'},
+    fr:{az:'Azimut (0°–360° · depuis le nord, horaire)',math:'Angle mathématique (0°–360° · depuis l’est, antihoraire)',north:'Nord',east:'Est',south:'Sud',west:'Ouest'}
+  }[lang]||null;
+  if(labels){
+    $('azInputLabel').textContent=modeAz==='math'?labels.az:labels.math;
+    const sensorTexts={es:['Activar brújula del iPhone','Sensor del iPhone: desactivado'],it:['Attiva bussola iPhone','Sensore iPhone: disattivato'],de:['iPhone-Kompass aktivieren','iPhone-Sensor: deaktiviert'],en:['Enable iPhone compass','iPhone sensor: off'],fr:['Activer la boussole de l’iPhone','Capteur iPhone : désactivé']}[lang]||['Enable iPhone compass','iPhone sensor: off'];
+    if(!sensorActive){$('enableSensor').textContent=sensorTexts[0];$('sensorLive').textContent=sensorTexts[1];}
+    $('eastLabel').textContent=labels.east[0];$('westLabel').textContent=labels.west[0];
+  }
+  localStorage.setItem('dcLanguage',lang);
+}
+$('language').value=localStorage.getItem('dcLanguage')||'es';
+$('language').addEventListener('change',e=>applyLanguage(e.target.value));
+applyLanguage($('language').value);
+compassBearing();
+
+renderHistory();convertDms();convertAz();convertRot();
+if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
