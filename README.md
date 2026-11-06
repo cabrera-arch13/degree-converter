@@ -1,1 +1,1 @@
-# degree-converter
+# Degree Converter – Angular conversion app for iPhone
