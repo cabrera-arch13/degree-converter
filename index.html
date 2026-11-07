@@ -85,7 +85,7 @@ input:focus,select:focus{border-color:#8c968a;box-shadow:0 0 0 3px #8c968a20}
 <div class="actions"><button class="btn primary" id="convertAz">Convertir</button><button class="btn secondary" id="clearAz">Limpiar</button></div>
 <div class="result"><div class="eyebrow">Resultado</div><div class="value" id="azResult">0°</div><div class="hint" id="azHint">Este → 0° matemáticos</div></div>
 </div>
-<div class="panel"><div class="eyebrow">Referencia de azimut</div><div class="two" style="margin-top:12px"><div>0° · Norte</div><div>90° · Este</div><div>180° · Sur</div><div>270° · Oeste</div></div></div>
+<div class="panel"><div class="eyebrow" id="azRefTitle">Referencia de azimut</div><div class="two" style="margin-top:12px"><div id="azRefNorth">0° · Norte</div><div id="azRefEast">90° · Este</div><div id="azRefSouth">180° · Sur</div><div id="azRefWest">270° · Oeste</div></div></div>
 </section>
 
 <section id="rotation" class="view hidden">
@@ -276,17 +276,22 @@ function applyLanguage(lang){
     }
   });
   const labels={
-    es:{az:'Azimut (0°–360° · desde el norte, horario)',math:'Ángulo matemático (0°–360° · desde el este, antihorario)',east:'E',west:'O'},
-    it:{az:'Azimut (0°–360° · dal nord, senso orario)',math:'Angolo matematico (0°–360° · da est, antiorario)',east:'E',west:'O'},
-    de:{az:'Azimut (0°–360° · ab Norden, im Uhrzeigersinn)',math:'Mathematischer Winkel (0°–360° · ab Osten, gegen den Uhrzeigersinn)',east:'O',west:'W'},
-    en:{az:'Azimuth (0°–360° · from north, clockwise)',math:'Math angle (0°–360° · from east, counterclockwise)',east:'E',west:'W'},
-    fr:{az:'Azimut (0°–360° · depuis le nord, horaire)',math:'Angle mathématique (0°–360° · depuis l’est, antihoraire)',east:'E',west:'O'}
+    es:{az:'Azimut (0°–360° · desde el norte, horario)',math:'Ángulo matemático (0°–360° · desde el este, antihorario)',east:'E',west:'O',refTitle:'Referencia de azimut',north:'0° · Norte',eastRef:'90° · Este',south:'180° · Sur',westRef:'270° · Oeste'},
+    it:{az:'Azimut (0°–360° · dal nord, senso orario)',math:'Angolo matematico (0°–360° · da est, antiorario)',east:'E',west:'O',refTitle:'Riferimenti azimutali',north:'0° · Nord',eastRef:'90° · Est',south:'180° · Sud',westRef:'270° · Ovest'},
+    de:{az:'Azimut (0°–360° · ab Norden, im Uhrzeigersinn)',math:'Mathematischer Winkel (0°–360° · ab Osten, gegen den Uhrzeigersinn)',east:'O',west:'W',refTitle:'Azimut-Referenz',north:'0° · Norden',eastRef:'90° · Osten',south:'180° · Süden',westRef:'270° · Westen'},
+    en:{az:'Azimuth (0°–360° · from north, clockwise)',math:'Math angle (0°–360° · from east, counterclockwise)',east:'E',west:'W',refTitle:'Azimuth reference',north:'0° · North',eastRef:'90° · East',south:'180° · South',westRef:'270° · West'},
+    fr:{az:'Azimut (0°–360° · depuis le nord, horaire)',math:'Angle mathématique (0°–360° · depuis l’est, antihoraire)',east:'E',west:'O',refTitle:'Repère d’azimut',north:'0° · Nord',eastRef:'90° · Est',south:'180° · Sud',westRef:'270° · Ouest'}
   }[lang]||null;
   if(labels){
     $('sensorNeedle').title=tr('Brújula física del dispositivo');
-    $('azInputLabel').textContent=modeAz==='math'?labels.az:labels.math;
+    $('azInputLabel').textContent=modeAz==='math'?labels.math:labels.az;
     $('eastLabel').textContent=labels.east;
     $('westLabel').textContent=labels.west;
+    $('azRefTitle').textContent=labels.refTitle;
+    $('azRefNorth').textContent=labels.north;
+    $('azRefEast').textContent=labels.eastRef;
+    $('azRefSouth').textContent=labels.south;
+    $('azRefWest').textContent=labels.westRef;
   }
   $('enableSensor').textContent=tr(sensorActive?'Brújula del iPhone activada':'Activar brújula del iPhone');
   $('sensorLive').textContent=tr(sensorStatusKey,sensorStatusArgs);
