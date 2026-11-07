@@ -106,36 +106,36 @@ input:focus,select:focus{border-color:#8c968a;box-shadow:0 0 0 3px #8c968a20}
 <script>
 const $=id=>document.getElementById(id);let modeDms='dec',modeAz='math',modeRot='ccw';
 let historyItems=JSON.parse(localStorage.getItem('dcHistory')||'[]');
+let currentLanguage=localStorage.getItem('dcLanguage')||'es';
+let sensorStatusKey='Sensor del iPhone: desactivado', sensorStatusArgs={};
+function tr(key,args={}){const dict={...(translations[currentLanguage]||translations.es),...(extraTranslations[currentLanguage]||extraTranslations.es)};let value=dict[key]||key;for(const [k,v] of Object.entries(args))value=value.replaceAll('{'+k+'}',String(v));return value;}
 function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1600)}
 function addHistory(label,value){historyItems.unshift({label,value});historyItems=historyItems.slice(0,8);localStorage.setItem('dcHistory',JSON.stringify(historyItems));renderHistory()}
-function renderHistory(){const el=$('historyList');el.innerHTML='';if(!historyItems.length){el.innerHTML='<div class="hint">Tus conversiones aparecerán aquí.</div>';return}historyItems.forEach(x=>{const d=document.createElement('div');d.className='historyitem';const a=document.createElement('span'),b=document.createElement('span');a.textContent=x.label;b.textContent=x.value;d.append(a,b);d.addEventListener('click',()=>copy(x.value));el.append(d)})}
-async function copy(v){try{await navigator.clipboard.writeText(v);toast('Resultado copiado')}catch(e){toast('Mantén pulsado el resultado para copiar')}}
+function renderHistory(){const el=$('historyList');el.innerHTML='';if(!historyItems.length){const empty=document.createElement('div');empty.className='hint';empty.textContent=tr('Tus conversiones aparecerán aquí.');el.append(empty);return}historyItems.forEach(x=>{const d=document.createElement('div');d.className='historyitem';const a=document.createElement('span'),b=document.createElement('span');a.textContent=tr(x.label);b.textContent=x.value;d.append(a,b);d.addEventListener('click',()=>copy(x.value));el.append(d)})}
+async function copy(v){try{await navigator.clipboard.writeText(v);toast(tr('Resultado copiado'))}catch(e){toast(tr('Mantén pulsado el resultado para copiar'))}}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('hidden',x.id!==b.dataset.tab))}));
 $('dmsResult').addEventListener('click',()=>copy($('dmsResult').textContent));
 $('azResult').addEventListener('click',()=>copy($('azResult').textContent));
 $('rotResult').addEventListener('click',()=>copy($('rotResult').textContent));
-function setDmsMode(m){modeDms=m;$('toDecimal').classList.toggle('active',m==='dec');$('toDms').classList.toggle('active',m==='dms');$('dmsInputs').classList.toggle('hidden',m!=='dec');$('decimalInput').classList.toggle('hidden',m!=='dms');$('dmsResult').textContent=m==='dec'?'40.446111°':'40° 26′ 46″';$('dmsHint').textContent=m==='dec'?'Grados decimales':'Grados · minutos · segundos'}
+function setDmsMode(m){modeDms=m;$('toDecimal').classList.toggle('active',m==='dec');$('toDms').classList.toggle('active',m==='dms');$('dmsInputs').classList.toggle('hidden',m!=='dec');$('decimalInput').classList.toggle('hidden',m!=='dms');$('dmsResult').textContent=m==='dec'?'40.446111°':'40° 26′ 46″';$('dmsHint').textContent=m==='dec'?'Grados decimales':tr('Grados · minutos · segundos')}
 $('toDecimal').onclick=()=>setDmsMode('dec');$('toDms').onclick=()=>setDmsMode('dms');
-function convertDms(){if(modeDms==='dec'){let d=Number($('deg').value),m=Number($('min').value),s=Number($('sec').value);if(![$('deg').value,$('min').value,$('sec').value].every(v=>v.trim()!== '')||m<0||m>=60||s<0||s>=60){toast('Revisa los valores: minutos y segundos deben ser 0–59');return}let sign=d<0?-1:1;let val=sign*(Math.abs(d)+m/60+s/3600);let out=val.toFixed(6)+'°';$('dmsResult').textContent=out;$('dmsHint').textContent='Grados decimales · precisión de 6 decimales';addHistory('DMS → Decimal',out)}else{let v=Number($('decimal').value);if($('decimal').value.trim()===''){toast('Introduce un ángulo decimal');return}let sign=v<0?'−':'',a=Math.abs(v),d=Math.floor(a),mf=(a-d)*60,m=Math.floor(mf),s=(mf-m)*60;let out=`${sign}${d}° ${m}′ ${s.toFixed(2)}″`;$('dmsResult').textContent=out;$('dmsHint').textContent='Grados · minutos · segundos';addHistory('Decimal → DMS',out)}}
-$('convertDms').onclick=convertDms;$('clearDms').onclick=()=>{['deg','min','sec','decimal'].forEach(x=>$(x).value='');$('dmsResult').textContent='—';$('dmsHint').textContent='Introduce los valores y convierte'};
+function convertDms(){if(modeDms==='dec'){let d=Number($('deg').value),m=Number($('min').value),s=Number($('sec').value);if(![$('deg').value,$('min').value,$('sec').value].every(v=>v.trim()!== '')||m<0||m>=60||s<0||s>=60){toast(tr('Revisa los valores: minutos y segundos deben ser 0–59'));return}let sign=d<0?-1:1;let val=sign*(Math.abs(d)+m/60+s/3600);let out=val.toFixed(6)+'°';$('dmsResult').textContent=out;$('dmsHint').textContent=tr('Grados decimales · precisión de 6 decimales');addHistory('DMS → Decimal',out)}else{let v=Number($('decimal').value);if($('decimal').value.trim()===''){toast(tr('Introduce un ángulo decimal'));return}let sign=v<0?'−':'',a=Math.abs(v),d=Math.floor(a),mf=(a-d)*60,m=Math.floor(mf),s=(mf-m)*60;let out=`${sign}${d}° ${m}′ ${s.toFixed(2)}″`;$('dmsResult').textContent=out;$('dmsHint').textContent=tr('Grados · minutos · segundos');addHistory('Decimal → DMS',out)}}
+$('convertDms').onclick=convertDms;$('clearDms').onclick=()=>{['deg','min','sec','decimal'].forEach(x=>$(x).value='');$('dmsResult').textContent='—';$('dmsHint').textContent=tr('Introduce los valores y convierte')};
 function norm(v){return ((v%360)+360)%360}
 function setAzMode(m){
   modeAz=m;
   $('azToMath').classList.toggle('active',m==='math');
   $('mathToAz').classList.toggle('active',m==='az');
   $('azInputLabel').textContent=m==='math'
-    ?'Azimut (0°–360° · desde el norte, horario)'
-    :'Ángulo matemático (0°–360° · desde el este, antihorario)';
-  $('azHint').textContent=m==='math'?'Este → 0° matemáticos':'Norte → 0° azimut';
+    ?tr('Azimut (0°–360° · desde el norte, horario)')
+    :tr('Ángulo matemático (0°–360° · desde el este, antihorario)');
+  $('azHint').textContent=m==='math'?tr('Este → 0° matemáticos'):tr('Norte → 0° azimut');
   updateDigitalCompass();
 }
 $('azToMath').onclick=()=>setAzMode('math');
 $('mathToAz').onclick=()=>setAzMode('az');
 
-function cardinalName(deg){
-  const dirs=['N','NE','E','SE','S','SW','W','NW'];
-  return dirs[Math.round(norm(deg)/45)%8];
-}
+function cardinalName(deg){const dirs=['N','NE','E','SE','S','SW','W','NW'];return dirs[Math.round(norm(deg)/45)%8];}
 function updateDigitalCompass(){
   const raw=$('azValue').value.trim();
   if(raw===''){ $('compassLive').textContent='—'; return; }
@@ -153,9 +153,9 @@ $('azValue').addEventListener('change',updateDigitalCompass);
 
 function convertAz(){
   const raw=$('azValue').value.trim();
-  if(raw===''){toast('Introduce un ángulo');return}
+  if(raw===''){toast(tr('Introduce un ángulo'));return}
   const v=Number(raw);
-  if(!Number.isFinite(v)){toast('Valor no válido');return}
+  if(!Number.isFinite(v)){toast(tr('Valor no válido'));return}
   const n=norm(v);
   const result=norm(90-n);
   const out=result.toFixed(4).replace(/\.?0+$/,'')+'°';
@@ -168,19 +168,19 @@ $('convertAz').onclick=convertAz;
 $('clearAz').onclick=()=>{
   $('azValue').value='';
   $('azResult').textContent='—';
-  $('azHint').textContent='Introduce un ángulo y convierte';
+  $('azHint').textContent=tr('Introduce un ángulo y convierte');
   $('needle').style.transform='translate(-50%,-100%) rotate(0deg)';
   $('compassLive').textContent='—';
 };
 function setRotMode(m){modeRot=m;$('cwToCcw').classList.toggle('active',m==='ccw');$('ccwToCw').classList.toggle('active',m==='cw')}
 $('cwToCcw').onclick=()=>setRotMode('ccw');$('ccwToCw').onclick=()=>setRotMode('cw');
-function convertRot(){if($('rotValue').value.trim()===''){toast('Introduce un ángulo');return}let v=norm(Number($('rotValue').value)),r=norm(360-v),out=r.toFixed(4).replace(/\.?0+$/,'')+'°';$('rotResult').textContent=out;$('rotHint').textContent=`${v}° ${modeRot==='ccw'?'horario':'antihorario'} = ${r}° ${modeRot==='ccw'?'antihorario':'horario'}`;addHistory(modeRot==='ccw'?'Derecha → Izquierda':'Izquierda → Derecha',out)}
-$('convertRot').onclick=convertRot;$('clearRot').onclick=()=>{$('rotValue').value='';$('rotResult').textContent='—';$('rotHint').textContent='Introduce un ángulo y convierte'};
-$('clearHistory').onclick=()=>{historyItems=[];localStorage.removeItem('dcHistory');renderHistory();toast('Historial borrado')};
+function convertRot(){if($('rotValue').value.trim()===''){toast(tr('Introduce un ángulo'));return}let v=norm(Number($('rotValue').value)),r=norm(360-v),out=r.toFixed(4).replace(/\.?0+$/,'')+'°';$('rotResult').textContent=out;$('rotHint').textContent=`${v}° ${modeRot==='ccw'?tr('horario'):tr('antihorario')} = ${r}° ${modeRot==='ccw'?tr('antihorario'):tr('horario')}`;addHistory(modeRot==='ccw'?'Derecha → Izquierda':'Izquierda → Derecha',out)}
+$('convertRot').onclick=convertRot;$('clearRot').onclick=()=>{$('rotValue').value='';$('rotResult').textContent='—';$('rotHint').textContent=tr('Introduce un ángulo y convierte')};
+$('clearHistory').onclick=()=>{historyItems=[];localStorage.removeItem('dcHistory');renderHistory();toast(tr('Historial borrado'))};
 // Brújula física mediante sensores de orientación del dispositivo.
 // En iOS, Safari solicita permiso explícito tras pulsar el botón y requiere HTTPS.
 let sensorActive=false;
-function setSensorStatus(message){$('sensorLive').textContent=message}
+function setSensorStatus(key,args={}){sensorStatusKey=key;sensorStatusArgs=args;$('sensorLive').textContent=tr(key,args)}
 function handleDeviceOrientation(event){
   let heading=null;
   if(typeof event.webkitCompassHeading==='number'){
@@ -199,12 +199,12 @@ function handleDeviceOrientation(event){
   heading=norm(heading);
   $('sensorNeedle').style.transform=`translate(-50%,-100%) rotate(${heading}deg)`;
   const rounded=heading.toFixed(1).replace(/\.0$/,'');
-  setSensorStatus(`Sensor activo · ${rounded}° · ${cardinalName(heading)}`);
+  setSensorStatus('Sensor activo · {deg}° · {dir}',{deg:rounded,dir:cardinalName(heading)});
 }
 async function enablePhysicalCompass(){
   if(!window.isSecureContext){
     setSensorStatus('La brújula física necesita una página HTTPS segura.');
-    toast('Abre la aplicación desde una dirección HTTPS');
+    toast(tr('Abre la aplicación desde una dirección HTTPS'));
     return;
   }
   try{
@@ -222,7 +222,7 @@ async function enablePhysicalCompass(){
     window.addEventListener('deviceorientation',handleDeviceOrientation,true);
     window.addEventListener('deviceorientationabsolute',handleDeviceOrientation,true);
     sensorActive=true;
-    $('enableSensor').textContent='Brújula del iPhone activada';
+    $('enableSensor').textContent=tr('Brújula del iPhone activada');
     setSensorStatus('Permiso concedido. Esperando rumbo magnético… mantén el iPhone plano y muévelo suavemente.');
     // Some Safari/iOS versions emit the first orientation event shortly after permission.
     setTimeout(()=>{
@@ -259,10 +259,11 @@ const translations={
     "Conversor de ángulos":"Convertisseur d’angles","Grados (°)":"Degrés (°)","Minutos (')":"Minutes (')","Segundos (\")":"Secondes (\")","Grados decimales":"Degrés décimaux","Convertir":"Convertir","Limpiar":"Effacer","Resultado":"Résultat","Historial reciente":"Historique récent","Borrar":"Effacer","Azimut ↔ ángulo matemático":"Azimut ↔ angle mathématique","Azimut → Matemático":"Azimut → mathématique","Matemático → Azimut":"Mathématique → azimut","Sentido de rotación":"Sens de rotation","Derecha → Izquierda":"Horaire → antihoraire","Izquierda → Derecha":"Antihoraire → horaire","Ángulo de entrada (0°–360°)":"Angle d’entrée (0°–360°)","Convertir sentido":"Convertir le sens","Ángulo equivalente":"Angle équivalent","Referencia de azimut":"Repère d’azimut","DIRECCIÓN EN TIEMPO REAL":"DIRECTION EN TEMPS RÉEL","PRECISIÓN EN CADA ÁNGULO":"PRÉCISION À CHAQUE ANGLE","Cómo se interpreta":"Comment ça marche","Sensor del iPhone: desactivado":"Capteur iPhone : désactivé","Activar brújula del iPhone":"Activer la boussole de l’iPhone","Tus conversiones aparecerán aquí.":"Vos conversions apparaîtront ici."
   }
 };
-const originalTextNodes=[];
-{const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);while(w.nextNode())originalTextNodes.push({node:w.currentNode,text:w.currentNode.nodeValue});}
+const extraTranslations={"es":{"AZIMUT":"AZIMUT","ROTACIÓN":"ROTACIÓN","La conversión conserva la misma dirección final, pero expresa el recorrido en el sentido contrario: (360° − ángulo) módulo 360°.":"La conversión conserva la misma dirección final, pero expresa el recorrido en el sentido contrario: (360° − ángulo) módulo 360°.","Resultado copiado":"Resultado copiado","Mantén pulsado el resultado para copiar":"Mantén pulsado el resultado para copiar","Revisa los valores: minutos y segundos deben ser 0–59":"Revisa los valores: minutos y segundos deben ser 0–59","Introduce un ángulo":"Introduce un ángulo","Valor no válido":"Valor no válido","Introduce los valores y convierte":"Introduce los valores y convierte","Grados decimales · precisión de 6 decimales":"Grados decimales · precisión de 6 decimales","Grados · minutos · segundos":"Grados · minutos · segundos","Introduce un ángulo y convierte":"Introduce un ángulo y convierte","ángulo normalizado":"ángulo normalizado","horario":"horario","antihorario":"antihorario","Historial borrado":"Historial borrado","Sensor detectado, pero no entrega rumbo absoluto. Comprueba compatibilidad y permisos.":"Sensor detectado, pero no entrega rumbo absoluto. Comprueba compatibilidad y permisos.","Sensor activo · {deg}° · {dir}":"Sensor activo · {deg}° · {dir}","La brújula física necesita una página HTTPS segura.":"La brújula física necesita una página HTTPS segura.","Abre la aplicación desde una dirección HTTPS":"Abre la aplicación desde una dirección HTTPS","Este navegador no ofrece sensores de orientación.":"Este navegador no ofrece sensores de orientación.","Permiso de sensor denegado. Puedes activarlo en Ajustes.":"Permiso de sensor denegado. Puedes activarlo en Ajustes.","Brújula del iPhone activada":"Brújula del iPhone activada","Permiso concedido. Esperando rumbo magnético… mantén el iPhone plano y muévelo suavemente.":"Permiso concedido. Esperando rumbo magnético… mantén el iPhone plano y muévelo suavemente.","Sin datos del sensor todavía. Comprueba los permisos de Safari y prueba de nuevo.":"Sin datos del sensor todavía. Comprueba los permisos de Safari y prueba de nuevo.","No se pudo activar el sensor. Comprueba los permisos del navegador.":"No se pudo activar el sensor. Comprueba los permisos del navegador.","Activar brújula del iPhone":"Activar brújula del iPhone","Sensor del iPhone: desactivado":"Sensor del iPhone: desactivado","Norte":"Norte","Este":"Este","Sur":"Sur","Oeste":"Oeste","DMS → Decimal":"DMS → Decimal","Decimal → DMS":"Decimal → DMS","Azimut → Matemático":"Azimut → Matemático","Matemático → Azimut":"Matemático → Azimut","Derecha → Izquierda":"Derecha → Izquierda","Izquierda → Derecha":"Izquierda → Derecha","Este → 0° matemáticos":"Este → 0° matemáticos","Norte → 0° azimut":"Norte → 0° azimut","0° · Norte":"0° · Norte","90° · Este":"90° · Este","180° · Sur":"180° · Sur","270° · Oeste":"270° · Oeste","Azimut (0°–360° · desde el norte, horario)":"Azimut (0°–360° · desde el norte, horario)","Ángulo matemático (0°–360° · desde el este, antihorario)":"Ángulo matemático (0°–360° · desde el este, antihorario)","Introduce un ángulo decimal":"Introduce un ángulo decimal","Brújula física del dispositivo":"Brújula física del dispositivo"},"it":{"AZIMUT":"AZIMUT","ROTACIÓN":"ROTAZIONE","La conversión conserva la misma dirección final, pero expresa el recorrido en el sentido contrario: (360° − ángulo) módulo 360°.":"La conversione mantiene la stessa direzione finale, ma esprime il percorso nel senso opposto: (360° − angolo) modulo 360°.","Resultado copiado":"Risultato copiato","Mantén pulsado el resultado para copiar":"Tieni premuto il risultato per copiarlo","Revisa los valores: minutos y segundos deben ser 0–59":"Controlla i valori: minuti e secondi devono essere compresi tra 0 e 59","Introduce un ángulo":"Inserisci un angolo","Valor no válido":"Valore non valido","Introduce los valores y convierte":"Inserisci i valori e converti","Grados decimales · precisión de 6 decimales":"Gradi decimali · precisione di 6 cifre decimali","Grados · minutos · segundos":"Gradi · minuti · secondi","Introduce un ángulo y convierte":"Inserisci un angolo e converti","ángulo normalizado":"angolo normalizzato","horario":"orario","antihorario":"antiorario","Historial borrado":"Cronologia eliminata","Sensor detectado, pero no entrega rumbo absoluto. Comprueba compatibilidad y permisos.":"Sensore rilevato, ma non fornisce una direzione assoluta. Controlla la compatibilità e i permessi.","Sensor activo · {deg}° · {dir}":"Sensore attivo · {deg}° · {dir}","La brújula física necesita una página HTTPS segura.":"La bussola fisica richiede una pagina HTTPS sicura.","Abre la aplicación desde una dirección HTTPS":"Apri l'applicazione da un indirizzo HTTPS","Este navegador no ofrece sensores de orientación.":"Questo browser non supporta i sensori di orientamento.","Permiso de sensor denegado. Puedes activarlo en Ajustes.":"Permesso del sensore negato. Puoi abilitarlo nelle Impostazioni.","Brújula del iPhone activada":"Bussola iPhone attivata","Permiso concedido. Esperando rumbo magnético… mantén el iPhone plano y muévelo suavemente.":"Permesso concesso. In attesa della direzione magnetica… tieni l’iPhone in piano e muovilo lentamente.","Sin datos del sensor todavía. Comprueba los permisos de Safari y prueba de nuevo.":"Ancora nessun dato dal sensore. Controlla i permessi di Safari e riprova.","No se pudo activar el sensor. Comprueba los permisos del navegador.":"Impossibile attivare il sensore. Controlla i permessi del browser.","Activar brújula del iPhone":"Attiva la bussola dell’iPhone","Sensor del iPhone: desactivado":"Sensore iPhone: disattivato","Norte":"Nord","Este":"Est","Sur":"Sud","Oeste":"Ovest","DMS → Decimal":"DMS → Decimale","Decimal → DMS":"Decimale → DMS","Azimut → Matemático":"Azimut → Matematico","Matemático → Azimut":"Matematico → Azimut","Derecha → Izquierda":"Orario → Antiorario","Izquierda → Derecha":"Antiorario → Orario","Este → 0° matemáticos":"Est → 0° matematici","Norte → 0° azimut":"Nord → 0° azimut","0° · Norte":"0° · Nord","90° · Este":"90° · Est","180° · Sur":"180° · Sud","270° · Oeste":"270° · Ovest","Azimut (0°–360° · desde el norte, horario)":"Azimut (0°–360° · dal nord, senso orario)","Ángulo matemático (0°–360° · desde el este, antihorario)":"Angolo matematico (0°–360° · da est, antiorario)","Introduce un ángulo decimal":"Inserisci un angolo decimale","Brújula física del dispositivo":"Bussola fisica del dispositivo"},"de":{"AZIMUT":"AZIMUT","ROTACIÓN":"DREHRICHTUNG","La conversión conserva la misma dirección final, pero expresa el recorrido en el sentido contrario: (360° − ángulo) módulo 360°.":"Die Umrechnung behält dieselbe Endrichtung bei, gibt den Drehweg jedoch in der entgegengesetzten Richtung an: (360° − Winkel) modulo 360°.","Resultado copiado":"Ergebnis kopiert","Mantén pulsado el resultado para copiar":"Halte das Ergebnis gedrückt, um es zu kopieren","Revisa los valores: minutos y segundos deben ser 0–59":"Prüfe die Werte: Minuten und Sekunden müssen zwischen 0 und 59 liegen","Introduce un ángulo":"Winkel eingeben","Valor no válido":"Ungültiger Wert","Introduce los valores y convierte":"Werte eingeben und umrechnen","Grados decimales · precisión de 6 decimales":"Dezimalgrad · Genauigkeit: 6 Nachkommastellen","Grados · minutos · segundos":"Grad · Minuten · Sekunden","Introduce un ángulo y convierte":"Winkel eingeben und umrechnen","ángulo normalizado":"normalisierter Winkel","horario":"im Uhrzeigersinn","antihorario":"gegen den Uhrzeigersinn","Historial borrado":"Verlauf gelöscht","Sensor detectado, pero no entrega rumbo absoluto. Comprueba compatibilidad y permisos.":"Sensor erkannt, liefert aber keine absolute Richtung. Kompatibilität und Berechtigungen prüfen.","Sensor activo · {deg}° · {dir}":"Sensor aktiv · {deg}° · {dir}","La brújula física necesita una página HTTPS segura.":"Der physische Kompass benötigt eine sichere HTTPS-Seite.","Abre la aplicación desde una dirección HTTPS":"Öffne die App über eine HTTPS-Adresse","Este navegador no ofrece sensores de orientación.":"Dieser Browser unterstützt keine Orientierungssensoren.","Permiso de sensor denegado. Puedes activarlo en Ajustes.":"Sensorberechtigung verweigert. Du kannst sie in den Einstellungen aktivieren.","Brújula del iPhone activada":"iPhone-Kompass aktiviert","Permiso concedido. Esperando rumbo magnético… mantén el iPhone plano y muévelo suavemente.":"Berechtigung erteilt. Warte auf den magnetischen Kurs… halte das iPhone flach und bewege es langsam.","Sin datos del sensor todavía. Comprueba los permisos de Safari y prueba de nuevo.":"Noch keine Sensordaten. Prüfe die Safari-Berechtigungen und versuche es erneut.","No se pudo activar el sensor. Comprueba los permisos del navegador.":"Sensor konnte nicht aktiviert werden. Prüfe die Browser-Berechtigungen.","Activar brújula del iPhone":"iPhone-Kompass aktivieren","Sensor del iPhone: desactivado":"iPhone-Sensor: deaktiviert","Norte":"Norden","Este":"Osten","Sur":"Süden","Oeste":"Westen","DMS → Decimal":"DMS → Dezimal","Decimal → DMS":"Dezimal → DMS","Azimut → Matemático":"Azimut → mathematisch","Matemático → Azimut":"Mathematisch → Azimut","Derecha → Izquierda":"Im Uhrzeigersinn → gegen den Uhrzeigersinn","Izquierda → Derecha":"Gegen den Uhrzeigersinn → im Uhrzeigersinn","Este → 0° matemáticos":"Ost → 0° mathematisch","Norte → 0° azimut":"Nord → 0° Azimut","0° · Norte":"0° · Norden","90° · Este":"90° · Osten","180° · Sur":"180° · Süden","270° · Oeste":"270° · Westen","Azimut (0°–360° · desde el norte, horario)":"Azimut (0°–360° · ab Norden, im Uhrzeigersinn)","Ángulo matemático (0°–360° · desde el este, antihorario)":"Mathematischer Winkel (0°–360° · ab Osten, gegen den Uhrzeigersinn)","Introduce un ángulo decimal":"Dezimalwinkel eingeben","Brújula física del dispositivo":"Physischer Gerätekompass"},"en":{"AZIMUT":"AZIMUTH","ROTACIÓN":"ROTATION","La conversión conserva la misma dirección final, pero expresa el recorrido en el sentido contrario: (360° − ángulo) módulo 360°.":"The conversion keeps the same final direction but expresses the rotation in the opposite direction: (360° − angle) modulo 360°.","Resultado copiado":"Result copied","Mantén pulsado el resultado para copiar":"Press and hold the result to copy","Revisa los valores: minutos y segundos deben ser 0–59":"Check the values: minutes and seconds must be between 0 and 59","Introduce un ángulo":"Enter an angle","Valor no válido":"Invalid value","Introduce los valores y convierte":"Enter the values and convert","Grados decimales · precisión de 6 decimales":"Decimal degrees · 6 decimal places","Grados · minutos · segundos":"Degrees · minutes · seconds","Introduce un ángulo y convierte":"Enter an angle and convert","ángulo normalizado":"normalized angle","horario":"clockwise","antihorario":"counterclockwise","Historial borrado":"History cleared","Sensor detectado, pero no entrega rumbo absoluto. Comprueba compatibilidad y permisos.":"Sensor detected, but it is not providing an absolute heading. Check compatibility and permissions.","Sensor activo · {deg}° · {dir}":"Sensor active · {deg}° · {dir}","La brújula física necesita una página HTTPS segura.":"The physical compass requires a secure HTTPS page.","Abre la aplicación desde una dirección HTTPS":"Open the app from an HTTPS address","Este navegador no ofrece sensores de orientación.":"This browser does not provide orientation sensors.","Permiso de sensor denegado. Puedes activarlo en Ajustes.":"Sensor permission denied. You can enable it in Settings.","Brújula del iPhone activada":"iPhone compass enabled","Permiso concedido. Esperando rumbo magnético… mantén el iPhone plano y muévelo suavemente.":"Permission granted. Waiting for magnetic heading… keep the iPhone flat and move it slowly.","Sin datos del sensor todavía. Comprueba los permisos de Safari y prueba de nuevo.":"No sensor data yet. Check Safari permissions and try again.","No se pudo activar el sensor. Comprueba los permisos del navegador.":"Could not activate the sensor. Check browser permissions.","Activar brújula del iPhone":"Enable iPhone compass","Sensor del iPhone: desactivado":"iPhone sensor: off","Norte":"North","Este":"East","Sur":"South","Oeste":"West","DMS → Decimal":"DMS → Decimal","Decimal → DMS":"Decimal → DMS","Azimut → Matemático":"Azimuth → Math","Matemático → Azimut":"Math → Azimuth","Derecha → Izquierda":"Clockwise → Counterclockwise","Izquierda → Derecha":"Counterclockwise → Clockwise","Este → 0° matemáticos":"East → 0° math angle","Norte → 0° azimut":"North → 0° azimuth","0° · Norte":"0° · North","90° · Este":"90° · East","180° · Sur":"180° · South","270° · Oeste":"270° · West","Azimut (0°–360° · desde el norte, horario)":"Azimuth (0°–360° · from north, clockwise)","Ángulo matemático (0°–360° · desde el este, antihorario)":"Math angle (0°–360° · from east, counterclockwise)","Introduce un ángulo decimal":"Enter a decimal angle","Brújula física del dispositivo":"Physical device compass"},"fr":{"AZIMUT":"AZIMUT","ROTACIÓN":"ROTATION","La conversión conserva la misma dirección final, pero expresa el recorrido en el sentido contrario: (360° − ángulo) módulo 360°.":"La conversion conserve la même direction finale, mais exprime la rotation dans le sens opposé : (360° − angle) modulo 360°.","Resultado copiado":"Résultat copié","Mantén pulsado el resultado para copiar":"Maintenez le résultat appuyé pour le copier","Revisa los valores: minutos y segundos deben ser 0–59":"Vérifiez les valeurs : les minutes et les secondes doivent être comprises entre 0 et 59","Introduce un ángulo":"Saisissez un angle","Valor no válido":"Valeur invalide","Introduce los valores y convierte":"Saisissez les valeurs et convertissez","Grados decimales · precisión de 6 decimales":"Degrés décimaux · précision de 6 décimales","Grados · minutos · segundos":"Degrés · minutes · secondes","Introduce un ángulo y convierte":"Saisissez un angle et convertissez","ángulo normalizado":"angle normalisé","horario":"horaire","antihorario":"antihoraire","Historial borrado":"Historique effacé","Sensor detectado, pero no entrega rumbo absoluto. Comprueba compatibilidad y permisos.":"Capteur détecté, mais aucun cap absolu n’est fourni. Vérifiez la compatibilité et les autorisations.","Sensor activo · {deg}° · {dir}":"Capteur actif · {deg}° · {dir}","La brújula física necesita una página HTTPS segura.":"La boussole physique nécessite une page HTTPS sécurisée.","Abre la aplicación desde una dirección HTTPS":"Ouvrez l’application depuis une adresse HTTPS","Este navegador no ofrece sensores de orientación.":"Ce navigateur ne fournit pas de capteurs d’orientation.","Permiso de sensor denegado. Puedes activarlo en Ajustes.":"Autorisation du capteur refusée. Vous pouvez l’activer dans les Réglages.","Brújula del iPhone activada":"Boussole de l’iPhone activée","Permiso concedido. Esperando rumbo magnético… mantén el iPhone plano y muévelo suavemente.":"Autorisation accordée. En attente du cap magnétique… gardez l’iPhone à plat et faites-le pivoter doucement.","Sin datos del sensor todavía. Comprueba los permisos de Safari y prueba de nuevo.":"Aucune donnée du capteur pour le moment. Vérifiez les autorisations de Safari et réessayez.","No se pudo activar el sensor. Comprueba los permisos del navegador.":"Impossible d’activer le capteur. Vérifiez les autorisations du navigateur.","Activar brújula del iPhone":"Activer la boussole de l’iPhone","Sensor del iPhone: desactivado":"Capteur iPhone : désactivé","Norte":"Nord","Este":"Est","Sur":"Sud","Oeste":"Ouest","DMS → Decimal":"DMS → Décimal","Decimal → DMS":"Décimal → DMS","Azimut → Matemático":"Azimut → mathématique","Matemático → Azimut":"Mathématique → azimut","Derecha → Izquierda":"Horaire → antihoraire","Izquierda → Derecha":"Antihoraire → horaire","Este → 0° matemáticos":"Est → 0° mathématique","Norte → 0° azimut":"Nord → 0° azimut","0° · Norte":"0° · Nord","90° · Este":"90° · Est","180° · Sur":"180° · Sud","270° · Oeste":"270° · Ouest","Azimut (0°–360° · desde el norte, horario)":"Azimut (0°–360° · depuis le nord, horaire)","Ángulo matemático (0°–360° · desde el este, antihorario)":"Angle mathématique (0°–360° · depuis l’est, antihoraire)","Introduce un ángulo decimal":"Saisissez un angle décimal","Brújula física del dispositivo":"Boussole physique de l’appareil"}};
+const originalTextNodes=[];{const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);while(w.nextNode())originalTextNodes.push({node:w.currentNode,text:w.currentNode.nodeValue});}
 function applyLanguage(lang){
-  const dict=translations[lang]||translations.es;
+  currentLanguage=lang;
+  const dict={...(translations[lang]||translations.es),...(extraTranslations[lang]||extraTranslations.es)};
   document.documentElement.lang=lang;
   originalTextNodes.forEach(item=>{item.node.nodeValue=item.text;});
   originalTextNodes.forEach(item=>{
@@ -275,24 +276,33 @@ function applyLanguage(lang){
     }
   });
   const labels={
-    es:{az:'Azimut (0°–360° · desde el norte, horario)',math:'Ángulo matemático (0°–360° · desde el este, antihorario)',north:'Norte',east:'Este',south:'Sur',west:'Oeste'},
-    it:{az:'Azimut (0°–360° · dal nord, senso orario)',math:'Angolo matematico (0°–360° · da est, antiorario)',north:'Nord',east:'Est',south:'Sud',west:'Ovest'},
-    de:{az:'Azimut (0°–360° · ab Norden, im Uhrzeigersinn)',math:'Mathematischer Winkel (0°–360° · ab Osten, gegen den Uhrzeigersinn)',north:'Norden',east:'Osten',south:'Süden',west:'Westen'},
-    en:{az:'Azimuth (0°–360° · from north, clockwise)',math:'Math angle (0°–360° · from east, counterclockwise)',north:'North',east:'East',south:'South',west:'West'},
-    fr:{az:'Azimut (0°–360° · depuis le nord, horaire)',math:'Angle mathématique (0°–360° · depuis l’est, antihoraire)',north:'Nord',east:'Est',south:'Sud',west:'Ouest'}
+    es:{az:'Azimut (0°–360° · desde el norte, horario)',math:'Ángulo matemático (0°–360° · desde el este, antihorario)',east:'E',west:'O'},
+    it:{az:'Azimut (0°–360° · dal nord, senso orario)',math:'Angolo matematico (0°–360° · da est, antiorario)',east:'E',west:'O'},
+    de:{az:'Azimut (0°–360° · ab Norden, im Uhrzeigersinn)',math:'Mathematischer Winkel (0°–360° · ab Osten, gegen den Uhrzeigersinn)',east:'O',west:'W'},
+    en:{az:'Azimuth (0°–360° · from north, clockwise)',math:'Math angle (0°–360° · from east, counterclockwise)',east:'E',west:'W'},
+    fr:{az:'Azimut (0°–360° · depuis le nord, horaire)',math:'Angle mathématique (0°–360° · depuis l’est, antihoraire)',east:'E',west:'O'}
   }[lang]||null;
   if(labels){
+    $('sensorNeedle').title=tr('Brújula física del dispositivo');
     $('azInputLabel').textContent=modeAz==='math'?labels.az:labels.math;
-    const sensorTexts={es:['Activar brújula del iPhone','Sensor del iPhone: desactivado'],it:['Attiva bussola iPhone','Sensore iPhone: disattivato'],de:['iPhone-Kompass aktivieren','iPhone-Sensor: deaktiviert'],en:['Enable iPhone compass','iPhone sensor: off'],fr:['Activer la boussole de l’iPhone','Capteur iPhone : désactivé']}[lang]||['Enable iPhone compass','iPhone sensor: off'];
-    if(!sensorActive){$('enableSensor').textContent=sensorTexts[0];$('sensorLive').textContent=sensorTexts[1];}
-    $('eastLabel').textContent=labels.east[0];$('westLabel').textContent=labels.west[0];
+    $('eastLabel').textContent=labels.east;
+    $('westLabel').textContent=labels.west;
   }
+  $('enableSensor').textContent=tr(sensorActive?'Brújula del iPhone activada':'Activar brújula del iPhone');
+  $('sensorLive').textContent=tr(sensorStatusKey,sensorStatusArgs);
+  if(modeDms==='dec') $('dmsHint').textContent=tr('Grados decimales · precisión de 6 decimales');
+  else $('dmsHint').textContent=tr('Grados · minutos · segundos');
+  $('azHint').textContent=modeAz==='math'?tr('Este → 0° matemáticos'):tr('Norte → 0° azimut');
+  if($('rotValue').value.trim()!==''){
+    const v=norm(Number($('rotValue').value)),r=norm(360-v);
+    $('rotHint').textContent=`${v}° ${modeRot==='ccw'?tr('horario'):tr('antihorario')} = ${r}° ${modeRot==='ccw'?tr('antihorario'):tr('horario')}`;
+  }
+  renderHistory();
   localStorage.setItem('dcLanguage',lang);
 }
 $('language').value=localStorage.getItem('dcLanguage')||'es';
 $('language').addEventListener('change',e=>applyLanguage(e.target.value));
 applyLanguage($('language').value);
-compassBearing();
 
 renderHistory();convertDms();updateDigitalCompass();convertRot();
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
