@@ -37,8 +37,9 @@ input:focus,select:focus{border-color:#8c968a;box-shadow:0 0 0 3px #8c968a20}
 .compass:before{content:"N";position:absolute;top:9px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#4f5b50}
 .compass:after{content:"S";position:absolute;bottom:9px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:#7d8179}
 .east,.west{position:absolute;top:50%;transform:translateY(-50%);font-size:11px;font-weight:800;color:#7d8179}.east{right:10px}.west{left:10px}
-.needle{position:absolute;left:50%;top:50%;width:3px;height:64px;background:#59675a;transform-origin:50% 100%;border-radius:3px;transform:translate(-50%,-100%) rotate(0deg)}
-.needle:after{content:"";position:absolute;top:-5px;left:-4px;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:11px solid #59675a}\n.sensorNeedle{position:absolute;left:50%;top:50%;width:2px;height:53px;background:#a17b4b;transform-origin:50% 100%;border-radius:3px;transform:translate(-50%,-100%) rotate(0deg);opacity:.95}.sensorNeedle:after{content:\"\";position:absolute;top:-4px;left:-3px;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:9px solid #a17b4b}
+.needle{position:absolute;left:50%;top:50%;width:3px;height:64px;background:#59675a;transform-origin:50% 100%;border-radius:3px;transform:translate(-50%,-100%) rotate(0deg);transition:transform .18s ease-out}
+.needle:after{content:"";position:absolute;top:-5px;left:-4px;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:11px solid #59675a}
+.sensorNeedle{position:absolute;left:50%;top:50%;width:2px;height:53px;background:#a17b4b;transform-origin:50% 100%;border-radius:3px;transform:translate(-50%,-100%) rotate(0deg);opacity:.95;transition:transform .12s linear}.sensorNeedle:after{content:"";position:absolute;top:-4px;left:-3px;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:9px solid #a17b4b}
 .history{margin-top:18px}.historyhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.historylist{display:grid;gap:7px}.historyitem{display:flex;justify-content:space-between;gap:10px;background:#fff;border:1px solid var(--line);padding:11px 12px;border-radius:12px;font-size:12px}.historyitem span:last-child{font-weight:700;text-align:right}
 .foot{text-align:center;color:var(--muted);font-size:10px;margin-top:20px}
 .hidden{display:none!important}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#303831;color:white;padding:11px 16px;border-radius:20px;font-size:12px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1}
@@ -118,30 +119,64 @@ $('toDecimal').onclick=()=>setDmsMode('dec');$('toDms').onclick=()=>setDmsMode('
 function convertDms(){if(modeDms==='dec'){let d=Number($('deg').value),m=Number($('min').value),s=Number($('sec').value);if(![$('deg').value,$('min').value,$('sec').value].every(v=>v.trim()!== '')||m<0||m>=60||s<0||s>=60){toast('Revisa los valores: minutos y segundos deben ser 0–59');return}let sign=d<0?-1:1;let val=sign*(Math.abs(d)+m/60+s/3600);let out=val.toFixed(6)+'°';$('dmsResult').textContent=out;$('dmsHint').textContent='Grados decimales · precisión de 6 decimales';addHistory('DMS → Decimal',out)}else{let v=Number($('decimal').value);if($('decimal').value.trim()===''){toast('Introduce un ángulo decimal');return}let sign=v<0?'−':'',a=Math.abs(v),d=Math.floor(a),mf=(a-d)*60,m=Math.floor(mf),s=(mf-m)*60;let out=`${sign}${d}° ${m}′ ${s.toFixed(2)}″`;$('dmsResult').textContent=out;$('dmsHint').textContent='Grados · minutos · segundos';addHistory('Decimal → DMS',out)}}
 $('convertDms').onclick=convertDms;$('clearDms').onclick=()=>{['deg','min','sec','decimal'].forEach(x=>$(x).value='');$('dmsResult').textContent='—';$('dmsHint').textContent='Introduce los valores y convierte'};
 function norm(v){return ((v%360)+360)%360}
-function setAzMode(m){modeAz=m;$('azToMath').classList.toggle('active',m==='math');$('mathToAz').classList.toggle('active',m==='az');$('azInputLabel').textContent=m==='math'?'Azimut (0°–360° · desde el norte, horario)':'Ángulo matemático (0°–360° · desde el este, antihorario)';$('azHint').textContent=m==='math'?'Este → 0° matemáticos':'Norte → 0° azimut'}
-$('azToMath').onclick=()=>setAzMode('math');$('mathToAz').onclick=()=>setAzMode('az');
-function convertAz(){if($('azValue').value.trim()===''){toast('Introduce un ángulo');return}let v=Number($('azValue').value);if(!Number.isFinite(v)){toast('Valor no válido');return}let n=norm(v),r=modeAz==='math'?norm(90-n):norm(90-n);let out=r.toFixed(4).replace(/\.?0+$/,'')+'°';$('azResult').textContent=out;$('needle').style.transform=`translate(-50%,-100%) rotate(${modeAz==='math'?n:90-n}deg)`;let cardinal=modeAz==='math'?({0:'Este',90:'Norte',180:'Oeste',270:'Sur'}[n]||'Dirección convertida'):({0:'Norte',90:'Este',180:'Sur',270:'Oeste'}[n]||'Dirección convertida');$('azHint').textContent=cardinal+' · ángulo normalizado';addHistory(modeAz==='math'?'Azimut → Matemático':'Matemático → Azimut',out)}
-$('convertAz').onclick=convertAz;$('clearAz').onclick=()=>{$('azValue').value='';$('azResult').textContent='—';$('azHint').textContent='Introduce un ángulo y convierte';$('needle').style.transform='translate(-50%,-100%) rotate(0deg)'};
+function setAzMode(m){
+  modeAz=m;
+  $('azToMath').classList.toggle('active',m==='math');
+  $('mathToAz').classList.toggle('active',m==='az');
+  $('azInputLabel').textContent=m==='math'
+    ?'Azimut (0°–360° · desde el norte, horario)'
+    :'Ángulo matemático (0°–360° · desde el este, antihorario)';
+  $('azHint').textContent=m==='math'?'Este → 0° matemáticos':'Norte → 0° azimut';
+  updateDigitalCompass();
+}
+$('azToMath').onclick=()=>setAzMode('math');
+$('mathToAz').onclick=()=>setAzMode('az');
+
+function cardinalName(deg){
+  const dirs=['N','NE','E','SE','S','SW','W','NW'];
+  return dirs[Math.round(norm(deg)/45)%8];
+}
+function updateDigitalCompass(){
+  const raw=$('azValue').value.trim();
+  if(raw===''){ $('compassLive').textContent='—'; return; }
+  const entered=Number(raw);
+  if(!Number.isFinite(entered)){ $('compassLive').textContent='—'; return; }
+  const n=norm(entered);
+  // Azimut: 0=Norte y aumenta en sentido horario.
+  // Matemático: 0=Este y aumenta en sentido antihorario.
+  const bearing=modeAz==='math'?n:norm(90-n);
+  $('needle').style.transform=`translate(-50%,-100%) rotate(${bearing}deg)`;
+  $('compassLive').textContent=`${cardinalName(bearing)} · ${bearing.toFixed(2).replace(/\.?0+$/,'')}°`;
+}
+$('azValue').addEventListener('input',updateDigitalCompass);
+$('azValue').addEventListener('change',updateDigitalCompass);
+
+function convertAz(){
+  const raw=$('azValue').value.trim();
+  if(raw===''){toast('Introduce un ángulo');return}
+  const v=Number(raw);
+  if(!Number.isFinite(v)){toast('Valor no válido');return}
+  const n=norm(v);
+  const result=norm(90-n);
+  const out=result.toFixed(4).replace(/\.?0+$/,'')+'°';
+  $('azResult').textContent=out;
+  updateDigitalCompass();
+  $('azHint').textContent=cardinalName(modeAz==='math'?n:norm(90-n))+' · ángulo normalizado';
+  addHistory(modeAz==='math'?'Azimut → Matemático':'Matemático → Azimut',out);
+}
+$('convertAz').onclick=convertAz;
+$('clearAz').onclick=()=>{
+  $('azValue').value='';
+  $('azResult').textContent='—';
+  $('azHint').textContent='Introduce un ángulo y convierte';
+  $('needle').style.transform='translate(-50%,-100%) rotate(0deg)';
+  $('compassLive').textContent='—';
+};
 function setRotMode(m){modeRot=m;$('cwToCcw').classList.toggle('active',m==='ccw');$('ccwToCw').classList.toggle('active',m==='cw')}
 $('cwToCcw').onclick=()=>setRotMode('ccw');$('ccwToCw').onclick=()=>setRotMode('cw');
 function convertRot(){if($('rotValue').value.trim()===''){toast('Introduce un ángulo');return}let v=norm(Number($('rotValue').value)),r=norm(360-v),out=r.toFixed(4).replace(/\.?0+$/,'')+'°';$('rotResult').textContent=out;$('rotHint').textContent=`${v}° ${modeRot==='ccw'?'horario':'antihorario'} = ${r}° ${modeRot==='ccw'?'antihorario':'horario'}`;addHistory(modeRot==='ccw'?'Derecha → Izquierda':'Izquierda → Derecha',out)}
 $('convertRot').onclick=convertRot;$('clearRot').onclick=()=>{$('rotValue').value='';$('rotResult').textContent='—';$('rotHint').textContent='Introduce un ángulo y convierte'};
 $('clearHistory').onclick=()=>{historyItems=[];localStorage.removeItem('dcHistory');renderHistory();toast('Historial borrado')};
-// Brújula interactiva: se actualiza mientras se escribe el ángulo.
-function compassBearing(){
-  const raw = $('azValue').value.trim();
-  if(raw===''){ $('compassLive').textContent='—'; return; }
-  const entered = norm(Number(raw));
-  const bearing = modeAz==='math' ? entered : norm(90-entered);
-  $('needle').style.transform=`translate(-50%,-100%) rotate(${bearing}deg)`;
-  const card = bearing===0?'N':bearing===90?'E':bearing===180?'S':bearing===270?'W':'';
-  $('compassLive').textContent=(card ? card+' · ' : '')+bearing.toFixed(2).replace(/\.?0+$/,'')+'°';
-}
-$('azValue').addEventListener('input',compassBearing);
-const oldConvertAz=convertAz;
-convertAz=function(){oldConvertAz();compassBearing()};
-
-
 // Brújula física mediante sensores de orientación del dispositivo.
 // En iOS, Safari solicita permiso explícito tras pulsar el botón y requiere HTTPS.
 let sensorActive=false;
@@ -165,10 +200,6 @@ function handleDeviceOrientation(event){
   $('sensorNeedle').style.transform=`translate(-50%,-100%) rotate(${heading}deg)`;
   const rounded=heading.toFixed(1).replace(/\.0$/,'');
   setSensorStatus(`Sensor activo · ${rounded}° · ${cardinalName(heading)}`);
-}
-function cardinalName(deg){
-  const dirs=['N','NE','E','SE','S','SW','W','NW'];
-  return dirs[Math.round(norm(deg)/45)%8];
 }
 async function enablePhysicalCompass(){
   if(!window.isSecureContext){
@@ -263,7 +294,7 @@ $('language').addEventListener('change',e=>applyLanguage(e.target.value));
 applyLanguage($('language').value);
 compassBearing();
 
-renderHistory();convertDms();convertAz();convertRot();
+renderHistory();convertDms();updateDigitalCompass();convertRot();
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 </body></html>
