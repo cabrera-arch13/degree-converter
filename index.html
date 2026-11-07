@@ -155,7 +155,12 @@ function handleDeviceOrientation(event){
     // Dispositivos compatibles con DeviceOrientationAbsolute: aproximación de rumbo.
     heading=360-event.alpha;
   }
-  if(heading===null || !Number.isFinite(heading)) return;
+  if(heading===null || !Number.isFinite(heading)){
+    if(sensorActive && !$('sensorLive').textContent.includes('Sin datos')){
+      setSensorStatus('Sensor detectado, pero no entrega rumbo absoluto. Comprueba compatibilidad y permisos.');
+    }
+    return;
+  }
   heading=norm(heading);
   $('sensorNeedle').style.transform=`translate(-50%,-100%) rotate(${heading}deg)`;
   const rounded=heading.toFixed(1).replace(/\.0$/,'');
@@ -177,7 +182,7 @@ async function enablePhysicalCompass(){
       return;
     }
     if(typeof DeviceOrientationEvent.requestPermission==='function'){
-      const permission=await DeviceOrientationEvent.requestPermission();
+      const permission=await DeviceOrientationEvent.requestPermission(true);
       if(permission!=='granted'){
         setSensorStatus('Permiso de sensor denegado. Puedes activarlo en Ajustes.');
         return;
@@ -187,7 +192,13 @@ async function enablePhysicalCompass(){
     window.addEventListener('deviceorientationabsolute',handleDeviceOrientation,true);
     sensorActive=true;
     $('enableSensor').textContent='Brújula del iPhone activada';
-    setSensorStatus('Esperando datos del sensor… mueve el iPhone suavemente.');
+    setSensorStatus('Permiso concedido. Esperando rumbo magnético… mantén el iPhone plano y muévelo suavemente.');
+    // Some Safari/iOS versions emit the first orientation event shortly after permission.
+    setTimeout(()=>{
+      if(sensorActive && $('sensorLive').textContent.includes('Esperando rumbo')){
+        setSensorStatus('Sin datos del sensor todavía. Comprueba los permisos de Safari y prueba de nuevo.');
+      }
+    },5000);
   }catch(err){
     setSensorStatus('No se pudo activar el sensor. Comprueba los permisos del navegador.');
   }
